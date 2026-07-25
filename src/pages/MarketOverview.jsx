@@ -1,309 +1,107 @@
- import React, { useEffect, useState } from "react";
-import { getStockQuote } from "../services/api";
+ import React, { useEffect, useState, useCallback } from "react";
+import { getMarketData } from "../services/api";
+import Loader from "../components/Loader";
+import ErrorMessage from "../components/ErrorMessage";
+import MarketCard from "../components/MarketCard";
+
 
 function MarketOverview() {
 
-  const [markets, setMarkets] = useState([]);
+  const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Major global stocks & indices (supported by your API)
-  const symbols = [
-    "AAPL",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "META",
-    "TSLA",
-    "NVDA",
-    "IBM"
-  ];
 
-  useEffect(() => {
-    loadMarketData();
-  }, []);
-
-  const loadMarketData = async () => {
+  const loadMarketData = useCallback(async () => {
 
     try {
 
-      const response = await Promise.all(
+      setLoading(true);
+      setError("");
 
-        symbols.map(async (symbol) => {
+      const data = await getMarketData();
 
-          try {
+      setMarketData(data);
 
-            const stock = await getStockQuote(symbol);
+    } catch (err) {
 
-            return {
+      console.log(err);
+      setError("Unable to load market data");
 
-              symbol: stock.symbol,
-
-              name: stock.name || stock.symbol,
-
-              price: Number(stock.close),
-
-              open: Number(stock.open),
-
-              high: Number(stock.high),
-
-              low: Number(stock.low),
-
-              previousClose: Number(stock.previous_close),
-
-              change: Number(stock.percent_change),
-
-              volume: stock.volume
-
-            };
-
-          }
-
-          catch {
-
-            return null;
-
-          }
-
-        })
-
-      );
-
-      setMarkets(response.filter(Boolean));
-
-    }
-
-    catch (error) {
-
-      console.log(error);
-
-    }
-
-    finally {
+    } finally {
 
       setLoading(false);
 
     }
 
-  };
+  }, []);
+
+
+
+  useEffect(() => {
+
+    loadMarketData();
+
+  }, [loadMarketData]);
 
 
 
   return (
 
-    <div className="container-fluid py-4">
+    <div className="container-fluid mt-4">
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <h2 className="mb-4">
+        Market Overview
+      </h2>
 
-        <h2 className="fw-bold">
 
-          Global Market Overview
+      {loading && <Loader />}
 
-        </h2>
 
-        <button
-          className="btn btn-primary"
-          onClick={loadMarketData}
-        >
-
-          Refresh
-
-        </button>
-
-      </div>
+      {error && (
+        <ErrorMessage message={error} />
+      )}
 
 
 
-      {
-
-        loading ?
-
-        <div className="text-center">
-
-          <div className="spinner-border text-primary"></div>
-
-          <h5 className="mt-3">
-
-            Loading Live Market Data...
-
-          </h5>
-
-        </div>
-
-        :
+      {!loading && !error && (
 
         <div className="row">
 
-          {
+          {marketData.length > 0 ? (
 
-            markets.map((market) => (
+            marketData.map((stock, index) => (
 
-              <div
-                className="col-lg-3 col-md-6 mb-4"
-                key={market.symbol}
+              <div 
+                className="col-md-4 mb-4"
+                key={index}
               >
 
-                <div className="card shadow h-100">
-
-                  <div className="card-header bg-primary text-white">
-
-                    <h5 className="mb-0">
-
-                      {market.name}
-
-                    </h5>
-
-                  </div>
-
-                  <div className="card-body">
-
-                    <p>
-
-                      <strong>Symbol:</strong>
-
-                      {" "}
-
-                      {market.symbol}
-
-                    </p>
-
-                    <h3 className="mb-3">
-
-                      $
-
-                      {market.price.toFixed(2)}
-
-                    </h3>
-
-                    <p>
-
-                      <strong>Open:</strong>
-
-                      {" "}
-
-                      ${market.open}
-
-                    </p>
-
-                    <p>
-
-                      <strong>High:</strong>
-
-                      {" "}
-
-                      ${market.high}
-
-                    </p>
-
-                    <p>
-
-                      <strong>Low:</strong>
-
-                      {" "}
-
-                      ${market.low}
-
-                    </p>
-
-                    <p>
-
-                      <strong>Previous Close:</strong>
-
-                      {" "}
-
-                      ${market.previousClose}
-
-                    </p>
-
-                    <p>
-
-                      <strong>Volume:</strong>
-
-                      {" "}
-
-                      {market.volume}
-
-                    </p>
-
-                    <div className="mt-3">
-
-                      <span
-
-                        className={
-
-                          market.change >= 0
-
-                            ? "badge bg-success fs-6"
-
-                            : "badge bg-danger fs-6"
-
-                        }
-
-                      >
-
-                        {market.change.toFixed(2)}%
-
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </div>
+                <MarketCard 
+                  stock={stock}
+                />
 
               </div>
 
             ))
 
-          }
+          ) : (
+
+            <p>
+              No market data available
+            </p>
+
+          )}
 
         </div>
 
-      }
+      )}
 
-
-
-      <div className="card mt-4 shadow-sm">
-
-        <div className="card-body">
-
-          <h4>
-
-            Market Summary
-
-          </h4>
-
-          <p className="mb-1">
-
-            • Live stock prices are fetched using the Twelve Data API.
-
-          </p>
-
-          <p className="mb-1">
-
-            • Green indicates a positive price movement.
-
-          </p>
-
-          <p className="mb-1">
-
-            • Red indicates a negative price movement.
-
-          </p>
-
-          <p className="mb-0">
-
-            • Click Refresh to fetch the latest market prices.
-
-          </p>
-
-        </div>
-
-      </div>
 
     </div>
 
   );
-
 }
+
 
 export default MarketOverview;
