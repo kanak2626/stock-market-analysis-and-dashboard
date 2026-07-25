@@ -1,6 +1,5 @@
- import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { getMarketData } from "../services/api";
-import Loader from "../components/Loader";
 import ErrorMessage from "../components/ErrorMessage";
 import MarketCard from "../components/MarketCard";
 
@@ -55,11 +54,36 @@ function MarketOverview() {
       </h2>
 
 
-      {loading && <Loader />}
+      {loading && (
+
+        <div className="text-center mt-4">
+
+          <div 
+            className="spinner-border text-primary"
+            role="status"
+          >
+            <span className="visually-hidden">
+              Loading...
+            </span>
+
+          </div>
+
+          <p className="mt-2">
+            Loading market data...
+          </p>
+
+        </div>
+
+      )}
+
 
 
       {error && (
-        <ErrorMessage message={error} />
+
+        <ErrorMessage 
+          message={error}
+        />
+
       )}
 
 
@@ -87,9 +111,11 @@ function MarketOverview() {
 
           ) : (
 
-            <p>
-              No market data available
-            </p>
+            <div className="alert alert-warning">
+
+              No market data available.
+
+            </div>
 
           )}
 
@@ -97,10 +123,10 @@ function MarketOverview() {
 
       )}
 
-
     </div>
 
   );
+
 }
 
 
