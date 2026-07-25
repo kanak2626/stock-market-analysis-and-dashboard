@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+ import React, { useEffect, useState, useCallback } from "react";
 import { getMarketData } from "../services/api";
 import ErrorMessage from "../components/ErrorMessage";
 import MarketCard from "../components/MarketCard";
@@ -24,8 +24,8 @@ function MarketOverview() {
 
     } catch (err) {
 
-      console.log(err);
-      setError("Unable to load market data");
+      console.error(err);
+      setError("Failed to load market data");
 
     } finally {
 
@@ -56,16 +56,12 @@ function MarketOverview() {
 
       {loading && (
 
-        <div className="text-center mt-4">
+        <div className="text-center mt-5">
 
-          <div 
-            className="spinner-border text-primary"
-            role="status"
-          >
+          <div className="spinner-border" role="status">
             <span className="visually-hidden">
               Loading...
             </span>
-
           </div>
 
           <p className="mt-2">
@@ -80,9 +76,7 @@ function MarketOverview() {
 
       {error && (
 
-        <ErrorMessage 
-          message={error}
-        />
+        <ErrorMessage message={error} />
 
       )}
 
@@ -97,13 +91,11 @@ function MarketOverview() {
             marketData.map((stock, index) => (
 
               <div 
-                className="col-md-4 mb-4"
+                className="col-md-4 mb-4" 
                 key={index}
               >
 
-                <MarketCard 
-                  stock={stock}
-                />
+                <MarketCard stock={stock} />
 
               </div>
 
@@ -113,7 +105,7 @@ function MarketOverview() {
 
             <div className="alert alert-warning">
 
-              No market data available.
+              No market data found.
 
             </div>
 
